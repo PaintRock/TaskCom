@@ -1,0 +1,42 @@
+// app.config.js
+module.exports = {
+  name: 'OK-TF1-app',
+  slug: 'OK-TF1-app',
+  version: '1.0.0',
+  orientation: 'portrait',
+  userInterfaceStyle: 'light',
+  newArchEnabled: true,
+  plugins: [
+    [
+      '@rnmapbox/maps',
+      {
+        RNMapboxMapsDownloadToken: process.env.MAPBOX_DOWNLOAD_TOKEN,
+      },
+    ],
+  ],
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: 'com.jleon2117.OKTF1app',
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription:
+        'This app needs access to your location to show it on the map.',
+    },
+  },
+  android: {
+    adaptiveIcon: {
+      backgroundColor: '#000000',
+    },
+    permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
+    package: 'com.jleon2117.OKTF1app',
+  },
+  // Environment variables will be added here
+  // In the extra section of app.config.js
+extra: {
+  FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID,
+},
+};
