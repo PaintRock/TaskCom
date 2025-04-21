@@ -1,3 +1,4 @@
+//screens/auth/SignupScreen.tsx
 import React, { useEffect, useRef } from 'react';
 import {
   View,

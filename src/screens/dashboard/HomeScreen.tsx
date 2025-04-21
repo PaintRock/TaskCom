@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -16,6 +16,8 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomNavigation } from '@/components/common/dashboard';
 import NotificationsModal from '@/components/common/NotificationsModal';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,8 +26,23 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { userData } = useAuth();
-  const firstName = userData?.displayName?.split(' ')[0] || 'User';
+  const [firstName, setFirstName] = useState('User');
+
   const [notificationsVisible, setNotificationsVisible] = useState(false);
+
+
+  // Use a simple effect that only runs once and gets data from auth
+  useEffect(() => {
+    try {
+      const auth = getAuth();
+      if (auth.currentUser?.displayName) {
+        setFirstName(auth.currentUser.displayName);
+      }
+    } catch (error) {
+      console.error("Error accessing auth:", error);
+    }
+  }, []);
+  
 
   const handleNotificationPress = () => {
     setNotificationsVisible(true);
@@ -134,8 +151,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginTop: 80,
-    marginBottom: 24,
+    marginTop: 35,
+    marginBottom: 15,
   },
   welcomeText: {
     fontSize: 16,
@@ -160,7 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     width: '100%',
-    flex: 2,
+    flex: 1,
   },
   smallCard: {
     height: 150,
@@ -170,7 +187,7 @@ const styles = StyleSheet.create({
   largeCard: {
     height: 250,
     marginBottom: 24,
-    flex: 3,
+    flex: 2,
   },
   cardContent: {
     flexDirection: 'row',
@@ -221,7 +238,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   bottomSpacer: {
-    height: 100,
+    height: 10,
   },
 });
 

@@ -1,3 +1,4 @@
+//utils/validation.ts
 export const validateEmail = (email: string): string => {
   if (!email.trim()) {
     return 'Email is required';

@@ -1,3 +1,4 @@
+//imports all necessary dependencies from React and Firebase
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import {
   User,
@@ -8,10 +9,12 @@ import {
   signOut,
   sendPasswordResetEmail,
   fetchSignInMethodsForEmail,
+  updateProfile, //added for fetching username and other issues
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
+// defining the structure of the user data stored in Firebase Typescript method
 interface UserData {
   displayName: string;
   email: string;
@@ -20,10 +23,11 @@ interface UserData {
   createdAt: Date;
 }
 
+// Defining all the functions and properties available through AuthContext
 type AuthContextType = {
-  user: User | null;
-  userData: UserData | null;
-  loading: boolean;
+  user: User | null;              // Firebase Authentication user object
+  userData: UserData | null;      // Custom user data from Firestore
+  loading: boolean;               // Loading state for authentication operations
   login: (email: string, password: string, organizationCode: string) => Promise<void>;
   signup: (
     name: string,
@@ -39,8 +43,10 @@ type AuthContextType = {
   diagnoseLogin: (email: string) => Promise<boolean>;
 };
 
+// Create the context with undefined as initial value
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// custom hook to use the auth context -- makes it easier to access the context in components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -49,9 +55,10 @@ export const useAuth = () => {
   return context;
 };
 
+// The AuthProvider component that wraps the app and provides auth context
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [user, setUser] = useState<User | null>(null);              //Firebase Auth user
+  const [userData, setUserData] = useState<UserData | null>(null);  // Firestore user data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,18 +114,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Fetches user data FROM Firestore with UID
   const fetchUserData = async (userId: string) => {
     console.log('Fetching user data for userId:', userId);
 
     try {
+      // Create a ref to the user doc in Firestore
       const userDocRef = doc(db, 'users', userId);
       console.log('User Doc Reference:', userDocRef.path);
 
+      // Gets the user doc from Firestore
       const userDoc = await getDoc(userDocRef);
 
       console.log('User Doc Exists:', userDoc.exists());
 
       if (userDoc.exists()) {
+        // if doc exists, get the data and set in state
         const userData = userDoc.data() as UserData;
         console.log('Raw User Data:', userData);
 
@@ -146,10 +157,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError('Unable to access your profile. Please try again later.');
     }
   };
-
+  // this useffect sets up a listener for authentication and state changes
   useEffect(() => {
     console.log('Starting onAuthStateChanged listener');
 
+    //onAuthStateChanged returns an unsubcribe function
     const unsubscribe = onAuthStateChanged(
       auth,
       async currentUser => {
@@ -159,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (currentUser) {
           try {
+            // If a user is logged in, fetch their data from Firestore
             console.log('Attempting to fetch user data for:', currentUser.uid);
             await fetchUserData(currentUser.uid);
           } catch (error) {
@@ -166,6 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setLoading(false);
           }
         } else {
+          // If no user is loggged in, clear the user data
           console.log('No user logged in');
           setUserData(null);
           setLoading(false);
@@ -176,15 +190,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       }
     );
-
+    // Clean the listener at dismount
     return () => {
       console.log('Unsubscribing from auth state changes');
       unsubscribe();
     };
   }, []);
 
-  // Fixed login function
+  // Fixed login function authenticates 
   const login = async (email: string, password: string, organizationCode: string) => {
+    //log attempt and reset error state
     console.log('Login Attempt:', {
       email,
       organizationCode,
@@ -204,7 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Perform the actual login
+      // Perform the actual login if organization code is valid
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('Login successful, user:', userCredential.user.uid);
       
@@ -256,6 +271,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAdmin: adminCode === 'OKTask1Admin',
     });
 
+
+
     setError(null);
     setLoading(true);
 
@@ -268,9 +285,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Invalid organization code');
       }
 
-      // Create the user
+      // Create the user in Firebase Auth
       console.log('Attempting to create user in Firebase');
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: name });
 
       const userData: UserData = {
         displayName: name,

@@ -85,10 +85,11 @@ const FloatingBottomNav: React.FC<FloatingBottomNavProps> = ({ currentScreen }) 
 const styles = StyleSheet.create({
   bottomNavContainer: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 10,
     left: 20,
     right: 20,
     alignItems: 'center',
+    opacity: 30,
   },
   bottomNav: {
     height: 60,
