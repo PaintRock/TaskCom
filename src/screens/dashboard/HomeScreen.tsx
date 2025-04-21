@@ -160,14 +160,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     width: '100%',
+    flex: 2,
   },
   smallCard: {
     height: 150,
     marginBottom: 24,
+    flex: 1,
   },
   largeCard: {
     height: 250,
     marginBottom: 24,
+    flex: 3,
   },
   cardContent: {
     flexDirection: 'row',
